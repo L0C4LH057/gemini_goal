@@ -1,81 +1,81 @@
-# Gemini Goal 🚀
+# Gemini Goal
+> Codex-inspired persistent goals for the Gemini CLI.
 
-**Gemini Goal** is a Codex-inspired `/goal` command for the Gemini CLI. It provides a persistent local goal state, continuation instructions, and safety guardrails to help the agent stay focused on long-running objectives.
+Gemini Goal provides a robust framework for managing long-running objectives within your Gemini sessions. It brings persistent local state, automatic continuation, and completion guardrails to ensure your agent stays focused until the job is truly done.
 
-Inspired by the [OpenAI Codex](https://openai.com/blog/openai-codex) `/goal` behavior, this tool ensures that your Gemini sessions are productive, tracked, and verified.
+Inspired by the original OpenAI Codex `/goal` behavior, this tool is designed for developers who need Gemini to work through complex, multi-step tasks without losing context or stopping prematurely.
 
-## ✨ Features
+---
 
-- 💾 **Persistent State:** Goals are stored locally in a SQLite database (`~/.gemini/goal/goals.sqlite`), allowing them to survive terminal restarts or shell drift.
-- 🔄 **Automatic Continuation:** Includes a Gemini CLI `Stop` hook that prevents the agent from stopping prematurely while a goal is active.
-- 🚦 **Session Isolation:** Goals are isolated by terminal session and working directory, preventing "goal leakage" between separate tabs.
-- ⏱️ **Time & Budget Tracking:** Tracks elapsed time and supports soft token budgets to manage resource usage.
-- 🛡️ **Completion Audits:** Enforces a rigorous completion audit before a goal can be marked as finished, ensuring all requirements are met with real evidence.
-- 🎮 **Intuitive CLI:** Simple slash-command interface: `/goal status`, `/goal pause`, `/goal resume`, `/goal clear`.
+## Core Capabilities
 
-## 🚀 Installation
+* **Persistent State**: Goals are stored in a local SQLite database, ensuring they survive terminal restarts, crashes, or shell drift.
+* **Auto-Continuation**: Integrates with the Gemini CLI `Stop` hook to automatically resume work as long as a goal remains active.
+* **Session Isolation**: Advanced session anchoring prevents goal leakage between concurrent terminal tabs or different projects.
+* **Rigorous Verification**: Enforces a completion audit checklist before marking tasks as finished, preventing premature success claims.
+* **Resource Tracking**: Monitors elapsed time and supports soft token budgets for better resource visibility.
 
-Ensure you have [Gemini CLI](https://github.com/google/gemini-cli) installed and configured.
+---
 
+## Quick Start
+
+### Prerequisites
+* [Gemini CLI](https://github.com/google/gemini-cli) installed and configured.
+
+### Installation
 ```bash
-# Clone the repository
-git clone https://github.com/your-username/gemini-goal.git
+git clone https://github.com/L0C4LH057/gemini-goal.git
 cd gemini-goal
-
-# Run the installer
 ./install.sh
 ```
 
-The installer will:
-1. Symlink the skill to `~/.gemini/skills/goal`.
-2. Configure a user-level `Stop` hook in `~/.gemini/settings.json`.
-3. Create the local state directory at `~/.gemini/goal/`.
+The installer automatically symlinks the skill to `~/.gemini/skills/goal` and registers the necessary hooks in your `settings.json`.
 
-## 📖 Usage
+---
 
-### Setting a Goal
-Give Gemini a concrete objective to work toward:
-```text
-/goal Refactor the authentication module to use JWT and add unit tests
-```
+## Command Reference
 
-### Soft Budgets
-You can specify a soft token budget (displayed as a reminder):
-```text
-/goal --tokens 500K research and implement a distributed caching layer
-```
+| Command | Description |
+| :--- | :--- |
+| `/goal <objective>` | Set a new active goal for the current session. |
+| `/goal --tokens <N> <obj>` | Set a goal with a soft token budget (e.g., 250K). |
+| `/goal` | View the current objective and continuation state. |
+| `/goal status` | Check the current goal's status and elapsed time. |
+| `/goal pause` | Temporarily halt automatic continuation. |
+| `/goal resume` | Resume work on a paused objective. |
+| `/goal clear` | Delete the current goal and reset state. |
+| `/goal complete` | Finalize the goal after passing the completion audit. |
 
-### Managing Goals
-- `/goal`: View the current goal and continuation instructions.
-- `/goal status`: Check the status of the current session's goal.
-- `/goal pause`: Temporarily pause automatic continuation.
-- `/goal resume`: Resume work on a paused goal.
-- `/goal clear`: Delete the current goal and its state.
-- `/goal complete`: Mark a goal as complete (requires a completion audit).
+---
 
-## 🛠️ How it Works
+## Technical Architecture
 
-1. **The Skill:** The `/goal` command is defined as a Gemini CLI skill in `goal/SKILL.md`. It invokes a lightweight Python script (`gemini_goal.py`) to manage the state.
-2. **Persistence:** State is managed via SQLite. We use a combination of terminal session IDs and directory hashes to anchor goals to specific contexts.
-3. **The Stop Hook:** The installer adds a command to your Gemini CLI `Stop` hooks. Every time the agent tries to stop, this hook checks for an active goal. If one is found, it injects "Gemini instructions" to keep the agent working until the objective is reached.
-4. **Runaway Guard:** By default, it allows up to 500 automatic continuations. You can adjust this by setting `GEMINI_GOAL_MAX_STOP_CONTINUES`.
+### The Skill Layer
+The `/goal` command is registered as a Gemini CLI skill. When invoked, it executes a lightweight Python bridge (`gemini_goal.py`) that manages all logic and state transitions.
 
-## 🧪 Testing
+### Persistence
+State is maintained in `~/.gemini/goal/goals.sqlite`. We anchor goals using a preference-ordered list of session identifiers, including stable terminal session IDs and directory-based hashes, ensuring the right goal always surfaces in the right context.
 
-The project includes a comprehensive suite of tests covering state management, session isolation, and hook logic.
+### The Stop Hook
+A command-type hook is registered in `~/.gemini/settings.json`. Every time the Gemini agent attempts to finish its turn, the hook intercepts. If a goal is active, it injects specialized instructions into the prompt, guiding the model to continue its work toward the objective.
 
+### Runaway Guard
+To prevent infinite loops, a runaway guard limits the number of automatic continuations (default: 500). This can be configured via the `GEMINI_GOAL_MAX_STOP_CONTINUES` environment variable.
+
+---
+
+## Development
+
+### Testing
+Run the comprehensive test suite to verify state management and session isolation:
 ```bash
 python3 -m pytest tests
 ```
 
-## 🤝 Contributing
+---
 
-Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
-
-## 📄 License
-
-This project is licensed under the [MIT License](LICENSE).
+## License
+Distributed under the MIT License. See `LICENSE` for more information.
 
 ---
-*Created by [Joseph Thacker](https://github.com/jthack)*
-# gemini_goal
+**Created by [Bashir Kabir Zarewa (L0C4L057)](https://github.com/L0C4LH057)**
